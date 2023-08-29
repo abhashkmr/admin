@@ -23,19 +23,7 @@ app.use(bodyParser());
 app.keys = ["your-secret-key"];
 app.use(session(app));
 
-// Middleware to check if the user is logged in
-async function requireLogin(ctx: Context, next: Next) {
-  if (!ctx.session?.user) {
-    return ctx.redirect("/login");
-  }
-  await next();
-}
-
-router.get("/", requireLogin, (ctx: Context) => {
-  const username = ctx.session?.user?.username || "Guest";
-  ctx.body = `Welcome, ${username}!`;
-});
-
+const secretKey ="coolDude69"
 
 router.post("/login", async (ctx: any) => {
   const { email, password } = ctx.request.body;
@@ -44,9 +32,11 @@ router.post("/login", async (ctx: any) => {
 
   const user: any = await searchUserByMail(email);
 
+  const payload = {userId:user.user_id}
+
   if (user && (await comparePasswords(password, user.password))) {
-    const token = jwt.sign({ userId: user?.email }, "your-secret-key", {
-      expiresIn: "1h", // Set token expiration time
+    const token = jwt.sign(payload, secretKey, {
+      expiresIn: "24h", 
     });
     ctx.body = { token };
     ctx.session.user = user;
@@ -69,12 +59,16 @@ router.get("/users", async (ctx) => {
 
 router.post("/updates", async (ctx: any) => {
   try {
-    const { userId, content } = ctx.request.body; // Assuming you're sending userId and content in the request body
+    const authorizationHeader = ctx.request.headers.authorization
+    const token = authorizationHeader.split(' ')[1]
+    const decodedToken = jwt.verify(token, secretKey);
 
+    const {content } = ctx.request.body; 
+    const userId = decodedToken.userId
     const insertedId = await insertUpdate(userId, content);
     ctx.status = 201;
     ctx.body = { message: "Update inserted", insertedId };
-  } catch (error) {
+  } catch (error) {    
     console.error("Error inserting update:", error);
     ctx.status = 500;
     ctx.body = { error: "Failed to insert update" };
