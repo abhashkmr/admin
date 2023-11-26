@@ -4,6 +4,7 @@ import session from "koa-session";
 import bodyParser from "koa-bodyparser";
 const cors = require("koa2-cors"); // Import the cors middleware
 const jwt = require("jsonwebtoken");
+import 'dotenv/config'
 import {
   getAllUsers,
   insertUpdate,
@@ -23,7 +24,7 @@ app.use(bodyParser());
 app.keys = ["your-secret-key"];
 app.use(session(app));
 
-const secretKey ="coolDude69"
+const secretKey =process.env.SECRET_KEY
 
 router.post("/login", async (ctx: any) => {
   const { email, password } = ctx.request.body;
@@ -36,7 +37,7 @@ router.post("/login", async (ctx: any) => {
 
   if (user && (await comparePasswords(password, user.password))) {
     const token = jwt.sign(payload, secretKey, {
-      expiresIn: "24h", 
+      expiresIn: "1h", 
     });
     ctx.body = { token };
     ctx.session.user = user;
