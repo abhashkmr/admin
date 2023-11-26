@@ -46,20 +46,20 @@ sample creation command
 
 ```bash
  CREATE TABLE users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(255),
-      email VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       user_id VARCHAR(255) NOT NULL UNIQUE;
-    -> );
+     );
 
  CREATE TABLE updates (
-    ->   id INT AUTO_INCREMENT PRIMARY KEY,
-    ->   user_id INT NOT NULL ,
-    ->   content TEXT NOT NULL,
-    ->   timestamp TIMESTAMP NOT NULL,
-    ->   FOREIGN KEY (user_id) REFERENCES users(user_id);
-    -> );
+       id SERIAL PRIMARY KEY,
+       user_id VARCHAR(255) NOT NULL ,
+       content TEXT NOT NULL,
+       timestamp TIMESTAMP NOT NULL,
+       FOREIGN KEY (user_id) REFERENCES users(user_id);
+      );
 ```
 
 
