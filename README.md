@@ -21,8 +21,9 @@ create database & tables in mysql.
 +----------+--------------+------+-----+---------+----------------+
 | id       | int          | NO   | PRI | NULL    | auto_increment |
 | name     | varchar(255) | YES  |     | NULL    |                |
-| email    | varchar(255) | YES  |     | NULL    |                |
-| password | varchar(255) | YES  |     | NULL    |                |
+| email    | varchar(255) | NO   |     | NULL    |                |
+| password | varchar(255) | NO   |     | NULL    |                |
+| user_id  | varchar(255) | NO   | UNI | NULL    |                |
 +----------+--------------+------+-----+---------+----------------+
 
 ```
@@ -34,9 +35,9 @@ create database & tables in mysql.
 | Field     | Type         | Null | Key | Default | Extra          |
 +-----------+--------------+------+-----+---------+----------------+
 | id        | int          | NO   | PRI | NULL    | auto_increment |
-| user_id   | int          | NO   | MUL | NULL    |                |
 | content   | varchar(255) | NO   |     |         |                |
 | timestamp | timestamp    | YES  |     | NULL    |                |
+| user_id   | varchar(255) | NO   | UNI | NULL    |                |
 +-----------+--------------+------+-----+---------+----------------+
 
 ```
@@ -45,19 +46,20 @@ sample creation command
 
 ```bash
  CREATE TABLE users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(255),
-      email VARCHAR(255) NOT NULL,
-      password VARCHAR(255) NOT NULL
-    -> );
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      user_id VARCHAR(255) NOT NULL UNIQUE;
+     );
 
  CREATE TABLE updates (
-    ->   id INT AUTO_INCREMENT PRIMARY KEY,
-    ->   user_id INT NOT NULL,
-    ->   content TEXT NOT NULL,
-    ->   timestamp TIMESTAMP NOT NULL,
-    ->   FOREIGN KEY (user_id) REFERENCES users(id)
-    -> );
+       id SERIAL PRIMARY KEY,
+       user_id VARCHAR(255) NOT NULL ,
+       content TEXT NOT NULL,
+       timestamp TIMESTAMP NOT NULL,
+       FOREIGN KEY (user_id) REFERENCES users(user_id);
+      );
 ```
 
 

@@ -2,11 +2,16 @@ import Koa, { Context, Next } from "koa";
 import Router from "koa-router";
 import session from "koa-session";
 import bodyParser from "koa-bodyparser";
-import bcrypt from "bcrypt";
 const cors = require("koa2-cors"); // Import the cors middleware
 const jwt = require("jsonwebtoken");
-import { getAllUsers,insertUpdate } from "./db/queries";
-
+import 'dotenv/config'
+import {
+  getAllUsers,
+  insertUpdate,
+  insertUser,
+  searchUserByMail,
+} from "./db/queries";
+import { comparePasswords, hashPassword } from "./utils";
 
 const app = new Koa();
 app.use(cors());
@@ -19,44 +24,20 @@ app.use(bodyParser());
 app.keys = ["your-secret-key"];
 app.use(session(app));
 
-// Sample in-memory user database (replace this with a real database)
-const users = [
-  { id: 1, email: "abhash.kumar@zopsmart.com", password: "password" }, // Password: password1
-];
+const secretKey =process.env.SECRET_KEY
 
-// Middleware to check if the user is logged in
-async function requireLogin(ctx: Context, next: Next) {
-  if (!ctx.session?.user) {
-    return ctx.redirect("/login");
-  }
-  await next();
-}
-
-router.get("/", requireLogin, (ctx: Context) => {
-  const username = ctx.session?.user?.username || "Guest";
-  ctx.body = `Welcome, ${username}!`;
-});
-
-router.get("/login", (ctx) => {
-  ctx.body = `
-    <h1>Login</h1>
-    <form method="post" action="/login">
-      <input type="text" name="username" placeholder="Username" required><br>
-      <input type="password" name="password" placeholder="Password" required><br>
-      <button type="submit">Login</button>
-    </form>
-  `;
-});
-
-router.post("/login", (ctx: any) => {
+router.post("/login", async (ctx: any) => {
   const { email, password } = ctx.request.body;
-  const user = users.find((user) => user.email === email);
 
-  if (
-    true
-  ) {
-    const token = jwt.sign({ userId: user?.email }, "your-secret-key", {
-      expiresIn: "1h", // Set token expiration time
+  if (!email || !password) throw new Error("Bad request");
+
+  const user: any = await searchUserByMail(email);
+
+  const payload = {userId:user.user_id}
+
+  if (user && (await comparePasswords(password, user.password))) {
+    const token = jwt.sign(payload, secretKey, {
+      expiresIn: "1h", 
     });
     ctx.body = { token };
     ctx.session.user = user;
@@ -67,29 +48,50 @@ router.post("/login", (ctx: any) => {
   }
 });
 
-router.get('/users', async (ctx) => {
+router.get("/users", async (ctx) => {
   try {
     const users = await getAllUsers();
     ctx.body = users;
   } catch (error) {
     ctx.status = 500;
-    ctx.body = { error: 'Database error' };
+    ctx.body = { error: "Database error" };
   }
 });
 
-router.post('/updates',async(ctx:any)=>{
+router.post("/updates", async (ctx: any) => {
   try {
-    const { userId, content } = ctx.request.body; // Assuming you're sending userId and content in the request body
+    const authorizationHeader = ctx.request.headers.authorization
+    const token = authorizationHeader.split(' ')[1]
+    const decodedToken = jwt.verify(token, secretKey);
 
+    const {content } = ctx.request.body; 
+    const userId = decodedToken.userId
     const insertedId = await insertUpdate(userId, content);
     ctx.status = 201;
-    ctx.body = { message: 'Update inserted', insertedId };
-  } catch (error) {
-    console.error('Error inserting update:', error);
+    ctx.body = { message: "Update inserted", insertedId };
+  } catch (error) {    
+    console.error("Error inserting update:", error);
     ctx.status = 500;
-    ctx.body = { error: 'Failed to insert update' };
+    ctx.body = { error: "Failed to insert update" };
   }
-})
+});
+
+router.post("/user", async (ctx: any) => {
+  try {
+    const { name, email, password } = ctx.request.body;
+    if (!name || !email || !password) throw new Error("Bad Request");
+
+    const hashedPassword = await hashPassword(password);
+    const user = { name: name, email: email, password: hashedPassword };
+    const userId = await insertUser(user);
+    ctx.status = 201;
+    ctx.body = { message: "User inserted", userId };
+  } catch (error: any) {
+    console.error("Error inserting user", error);
+    ctx.status = 400;
+    ctx.body = { error: error.message };
+  }
+});
 
 app.use(router.routes());
 

@@ -1,21 +1,24 @@
-import mysql from 'mysql2';
+import {Pool} from 'pg'
+import 'dotenv/config'
 
-const pool = mysql.createPool({
-  connectionLimit: 10, // Maximum number of connections in the pool
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: '12345',
-  database: 'dailyupdates',
-});
 
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.error('Error connecting to MySQL:', err);
-    return;
-  }
-  console.log('Connected to MySQL');
-  connection.release(); // Release the connection
-});
+const pool = new Pool({
+    host: process.env.DATABASE_HOST,
+    user:process.env.DATABASE_USER,
+    password:process.env.DATABASE_PASSWORD,
+    database:process.env.DATABASE_NAME,
+    ssl: true
+})
 
-export default pool;
+pool.connect((err: any,client: any,release: any)=>{
+
+    if(err){
+        console.error('err connecting to db',err)
+        return
+    }
+    console.log('connected to DB')
+    release()
+})
+
+export default pool
+
