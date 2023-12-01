@@ -16,9 +16,11 @@ export async function getAllUsers(): Promise<User[]> {
       const query = 'SELECT * FROM users';
       pool.query(query, (err:any, users:any) => {
         if (err) {
+          console.log(err);
           reject(err);
         } else {
           resolve(users);
+          console.log(users);
         }
       });
     });
