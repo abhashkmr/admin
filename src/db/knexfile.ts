@@ -8,11 +8,11 @@ module.exports = {
     development: {
       client: 'postgresql',
       connection: {
-        host: 'localhost', // or use the IP address of your Docker host
-        user: 'postgres',
-        password: 'sanjeev8084',
-        database: 'postgres',
-        port: 5432,
+        host: process.env.host, 
+        user:  process.env.uses,
+        password: process.env.password,
+        database: process.env.database,
+        port: process.env.port,
       },
     pool: {
       min: 2,
