@@ -1,15 +1,15 @@
-// Update with your config settings.
-
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+require('dotenv').config();
+
 module.exports = {
 
     development: {
-      client: 'postgresql',
+      client: process.env.client,
       connection: {
         host: process.env.host, 
-        user:  process.env.uses,
+        user:  process.env.user,
         password: process.env.password,
         database: process.env.database,
         port: process.env.port,
@@ -19,7 +19,7 @@ module.exports = {
       max: 10
     },
     migrations: {
-      tableName: 'knex_migration'
+      tableName: process.env.tableName
     }
   }
 
