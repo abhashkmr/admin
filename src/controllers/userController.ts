@@ -5,7 +5,7 @@ import {
     insertUser,
     searchUserById,
 } from '../services/userService'
-import { validateEmail } from '../utils'
+import { hashPassword, validateEmail } from '../utils'
 
 export const getUsers = async (ctx: Context) => {
     try {
@@ -26,7 +26,12 @@ export const postUser = async (ctx: Context) => {
     if (!validateEmail(email)) throw new Error('email validation failed ')
 
     try {
-        const userRes = await insertUser({ name, email, password })
+        const encryptPassword = await hashPassword(password)
+        const userRes = await insertUser({
+            name,
+            email,
+            password: encryptPassword,
+        })
         ctx.body = userRes
     } catch (error) {
         ctx.body = error
