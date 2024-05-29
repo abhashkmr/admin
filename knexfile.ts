@@ -12,7 +12,7 @@ const config: { [key: string]: Knex.Config } = {
             user: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_NAME,
-            ssl:true
+             ssl:false
         },
         migrations: {
             directory: './migrations',
@@ -21,7 +21,14 @@ const config: { [key: string]: Knex.Config } = {
     },
     production: {
         client: 'pg',
-        connection: process.env.DATABASE_URL,
+        connection: {
+          host: process.env.DATABASE_HOST,
+            port: Number(process.env.DATABASE_PORT),
+            user: process.env.DATABASE_USER,
+            password: process.env.DATABASE_PASSWORD,
+            database: process.env.DATABASE_NAME,
+            ssl:true
+        },
         migrations: {
             directory: './migrations',
             extension: 'ts',
