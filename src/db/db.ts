@@ -7,16 +7,20 @@ const pool = new Pool({
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-    ssl: true,
+    port: Number(process.env.DATABASE_PORT),
+    // ssl:false
 })
 
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('err connecting to db', err)
-        return
+async function connectToDB() {
+    try {
+        const client = await pool.connect()
+        console.log('connected to DB')
+        client.release()
+    } catch (err) {
+        console.error('Error connecting to DB:', err)
     }
-    console.log('connected to DB')
-    release()
-})
+}
+
+connectToDB()
 
 export default pool

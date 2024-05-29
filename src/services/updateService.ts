@@ -3,7 +3,7 @@ import pool from '../db/db'
 export async function insertUpdate(userId: string, content: string) {
     return new Promise((resolve, reject) => {
         const query =
-            'INSERT INTO updates (user_id, content, timestamp) VALUES ($1, $2, NOW())'
+            'INSERT INTO updates (user_id, content) VALUES ($1, $2)'
         const values = [userId, content]
         pool.query(query, values, (err, results) => {
             if (err) {
